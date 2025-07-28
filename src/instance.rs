@@ -34,10 +34,10 @@ pub unsafe extern "system" fn vulkan_debug_callback(
         #[cfg(feature = "logger")]
         {
             match message_severity {
-                DebugUtilsMessageSeverityFlagsEXT::ERROR => log::error!("{}", formated),
-                DebugUtilsMessageSeverityFlagsEXT::WARNING => log::warn!("{}", formated),
-                DebugUtilsMessageSeverityFlagsEXT::INFO => log::info!("{}", formated),
-                DebugUtilsMessageSeverityFlagsEXT::VERBOSE => log::debug!("{}", formated),
+                vk::DebugUtilsMessageSeverityFlagsEXT::ERROR => log::error!("{}", formated),
+                vk::DebugUtilsMessageSeverityFlagsEXT::WARNING => log::warn!("{}", formated),
+                vk::DebugUtilsMessageSeverityFlagsEXT::INFO => log::info!("{}", formated),
+                vk::DebugUtilsMessageSeverityFlagsEXT::VERBOSE => log::debug!("{}", formated),
                 _ => log::error!("Unknown vulkan message severity: {}", formated),
             }
         }
