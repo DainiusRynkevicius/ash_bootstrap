@@ -1,0 +1,18 @@
+[package]
+name = "ash_bootstrap"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+ash = "0.38.0+1.3.281"
+thiserror = "2.0.12"
+
+
+[dependencies.log]
+version = "0.4.27"
+optional = true
+
+[features]
+portability_enumeration = []
+logger = ["log"]
+default = ["portability_enumeration"]
