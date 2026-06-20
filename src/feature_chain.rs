@@ -82,12 +82,16 @@ impl<'a> GenericFeatureChain<'a> {
 impl Clone for GenericFeatureChain<'_> {
     // Resets p next chain and clones
     fn clone(&self) -> Self {
-        let chain = Self{
-            nodes: self.nodes.iter().map(|x| unsafe {
-                let mut node = x.clone();
-                node.p_next = null_mut();
-                node
-            }).collect(),
+        let chain = Self {
+            nodes: self
+                .nodes
+                .iter()
+                .map(|x| unsafe {
+                    let mut node = x.clone_raw();
+                    node.p_next = null_mut();
+                    node
+                })
+                .collect(),
         };
         chain
     }
@@ -108,17 +112,18 @@ impl<'a> GenericFeatureNode<'a> {
     where
         T: ExtendsPhysicalDeviceFeatures2,
     {
-       unsafe {Self::from_raw(feature)}
+        unsafe { Self::from_raw(feature) }
     }
 
     pub fn from_swapchain_feature<T>(feature: T) -> GenericFeatureNode<'a>
-    where T: ExtendsSwapchainCreateInfoKHR,
+    where
+        T: ExtendsSwapchainCreateInfoKHR,
     {
-        unsafe {Self::from_raw(feature)}
+        unsafe { Self::from_raw(feature) }
     }
 
     /// # Safety: feature must be a chainable vulkan feature struct
-    pub unsafe fn from_raw<T>(feature: T) -> GenericFeatureNode<'a>{
+    pub unsafe fn from_raw<T>(feature: T) -> GenericFeatureNode<'a> {
         assert!(
             mem::size_of::<T>() <= mem::size_of::<Self>(),
             "Not enough space to copy fields."
@@ -156,8 +161,8 @@ impl<'a> GenericFeatureNode<'a> {
     }
 
     /// SAFETY: Must not live more than original feature chain lives
-    pub unsafe fn clone(&self) -> Self {
-        Self{
+    pub unsafe fn clone_raw(&self) -> Self {
+        Self {
             structure_type: self.structure_type.clone(),
             p_next: self.p_next.clone(),
             fields: self.fields.clone(),
