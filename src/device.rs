@@ -43,15 +43,16 @@ impl<'a> DeviceBuilder<'a> {
             .extensions_to_enable
             .iter()
             .map(|name| {
-                let c_string = CString::new(name.clone()).unwrap();
-                c_string.as_ptr()
+                CString::new(name.clone()).unwrap()
             })
             .collect::<Vec<_>>();
+
+
 
         if self.physical_device.surface.is_some()
             || self.physical_device.defer_surface_initialization
         {
-            extensions_to_enable.push(vk::KHR_SWAPCHAIN_NAME.as_ptr());
+            extensions_to_enable.push(vk::KHR_SWAPCHAIN_NAME.to_owned());
         }
 
         let mut final_p_next_chain = self.physical_device.feature_chain.clone();
@@ -83,11 +84,12 @@ impl<'a> DeviceBuilder<'a> {
             final_p_next_chain.add_node(node);
         });
 
+        let extensions_to_enable_ptr =extensions_to_enable.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
         unsafe { final_p_next_chain.chain_up_physical_device(&mut local_features) };
         device_create_info = device_create_info
             .push_next(&mut local_features)
             .queue_create_infos(queue_create_infos.as_slice())
-            .enabled_extension_names(extensions_to_enable.as_slice());
+            .enabled_extension_names(extensions_to_enable_ptr.as_slice());
 
         let device = if let Ok(vk_device) = unsafe {
             self.physical_device.instance.create_device(
