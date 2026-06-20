@@ -64,7 +64,7 @@ impl PhysicalDeviceSelector<'_> {
             Err(err) => Err(err),
         }
     }
-    pub fn select_device_names(self) -> Result<Vec<String>, PhysicalDeviceError> {
+    pub fn select_device_names(&self) -> Result<Vec<String>, PhysicalDeviceError> {
         let selected_devices = self.select_impl();
 
         match selected_devices {
