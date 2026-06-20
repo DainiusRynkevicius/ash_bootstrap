@@ -125,7 +125,7 @@ impl Swapchain<'_> {
     /// - No commands are currently executing that use the swapchain.
     /// - The `self.device` and `self.instance` are still valid and not destroyed.
     /// - This function is only called once per swapchain; calling it multiple times results in undefined behavior.
-    pub unsafe fn destroy(&self) {
+    pub unsafe fn destroy(self) {
         if !self.swapchain.is_null() {
             let khr_device = ash::khr::swapchain::Device::new(&self.instance, &self.device);
             unsafe { khr_device.destroy_swapchain(self.swapchain, self.allocation_callbacks) };

@@ -235,7 +235,7 @@ impl<'a> Device<'a> {
     /// - No other operations are performed on `self.device` after this call.
     /// - All resources created using this device have been properly destroyed or released.
     /// - This function is only called once; double destruction leads to undefined behavior.
-    pub unsafe fn destroy(&self) {
+    pub unsafe fn destroy(self) {
         unsafe {
             self.device
                 .destroy_device(self.allocation_callbacks.as_ref())

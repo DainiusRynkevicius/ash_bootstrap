@@ -572,7 +572,7 @@ pub struct Instance<'a> {
 }
 
 impl Instance<'_> {
-    pub unsafe fn destroy(&self) {
+    pub unsafe fn destroy(self) {
         if let Some(messenger) = self.debug_messenger {
             if !messenger.is_null() {
                 let instance = ash::ext::debug_utils::Instance::new(&self.entry, &self.instance);
