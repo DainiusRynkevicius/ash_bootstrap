@@ -131,6 +131,13 @@ impl Swapchain<'_> {
             unsafe { khr_device.destroy_swapchain(self.swapchain, self.allocation_callbacks) };
         }
     }
+
+    pub fn image_format(&self) -> vk::Format {self.image_format}
+    pub fn color_space(&self) -> vk::ColorSpaceKHR {self.color_space}
+    pub fn extent(&self) -> vk::Extent2D {self.extent}
+    pub fn present_mode(&self) -> vk::PresentModeKHR {self.present_mode}
+    pub fn image_count(&self) -> u32 {self.image_count}
+    pub fn image_usage_flags(&self) -> vk::ImageUsageFlags {self.image_usage_flags}
 }
 
 struct SwapchainInfo<'a> {
