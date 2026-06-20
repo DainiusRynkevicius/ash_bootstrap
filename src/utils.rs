@@ -1,7 +1,7 @@
 use crate::errors::SurfaceSupportError;
 use crate::instance::Instance;
+use ash::vk;
 use ash::vk::{Bool32, Extent2D, Handle};
-use ash::{Entry, vk};
 
 pub trait AsBool {
     fn as_bool(&self) -> bool;
@@ -471,11 +471,15 @@ pub fn find_desired_surface_format(
     available: &[vk::SurfaceFormatKHR],
     desired: &[vk::SurfaceFormatKHR],
 ) -> Result<vk::SurfaceFormatKHR, SurfaceSupportError> {
-   desired
-       .iter()
-       .find(|d| available.iter().any(|a| a.format == d.format && a.color_space == d.color_space))
-       .copied()
-       .ok_or(SurfaceSupportError::NoSuitableDesiredFormat)
+    desired
+        .iter()
+        .find(|d| {
+            available
+                .iter()
+                .any(|a| a.format == d.format && a.color_space == d.color_space)
+        })
+        .copied()
+        .ok_or(SurfaceSupportError::NoSuitableDesiredFormat)
 }
 pub fn find_best_surface_format(
     available: &[vk::SurfaceFormatKHR],
@@ -521,11 +525,10 @@ pub fn find_present_mode(
         .unwrap_or(vk::PresentModeKHR::FIFO)
 }
 
-pub unsafe fn destroy_surface(entry: &ash::Entry,instance: &Instance, surface: vk::SurfaceKHR) {
+pub unsafe fn destroy_surface(entry: &ash::Entry, instance: &Instance, surface: vk::SurfaceKHR) {
     if !surface.is_null() {
         unsafe {
-            let khr_instance =
-                ash::khr::surface::Instance::new(entry, &instance.instance);
+            let khr_instance = ash::khr::surface::Instance::new(entry, &instance.instance);
             khr_instance.destroy_surface(surface, instance.allocation_callbacks.as_ref());
         }
     }
