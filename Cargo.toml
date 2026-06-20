@@ -2,10 +2,15 @@
 name = "ash_bootstrap"
 version = "0.1.0"
 edition = "2024"
+description = "A rust port of vk-bootstrap for the ash Vulkan wrapper"
+license = "MIT"
+repository = "https://github.com/DainiusRynkevicius/ash_bootstrap"
+keywords = ["vulkan", "ash", "graphics", "bootstrap"]
+categories = ["graphics", "rendering"]
 
 [dependencies]
-ash = "0.38.0+1.3.281"
-thiserror = "2.0.12"
+ash = "0.38.0"
+thiserror = "2.0.18"
 
 
 [dependencies.log]
