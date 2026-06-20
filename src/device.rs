@@ -44,7 +44,7 @@ impl<'a> DeviceBuilder<'a> {
             .iter()
             .map(|name| {
                 CString::new(name.clone()).unwrap_or({
-                    #[cfg(feature = "log")]
+                    #[cfg(feature = "logger")]
                     {
                         log::warn!("Malformed extension name: {}", name);
                     }
@@ -52,12 +52,10 @@ impl<'a> DeviceBuilder<'a> {
                     {
                         println!("Malformed extension name: {}", name);
                     }
-                 Default::default()   
+                    Default::default()
                 })
             })
             .collect::<Vec<_>>();
-
-
 
         if self.physical_device.surface.is_some()
             || self.physical_device.defer_surface_initialization
@@ -94,7 +92,10 @@ impl<'a> DeviceBuilder<'a> {
             final_p_next_chain.add_node(node);
         });
 
-        let extensions_to_enable_ptr =extensions_to_enable.iter().map(|x| x.as_ptr()).collect::<Vec<_>>();
+        let extensions_to_enable_ptr = extensions_to_enable
+            .iter()
+            .map(|x| x.as_ptr())
+            .collect::<Vec<_>>();
         unsafe { final_p_next_chain.chain_up_physical_device(&mut local_features) };
         device_create_info = device_create_info
             .push_next(&mut local_features)
