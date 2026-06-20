@@ -198,6 +198,7 @@ impl SwapchainInfo<'_> {
 
 pub struct SwapchainBuilder<'a> {
     info: SwapchainInfo<'a>,
+    entry: ash::Entry,
 }
 
 impl<'a> SwapchainBuilder<'a> {
@@ -217,7 +218,7 @@ impl<'a> SwapchainBuilder<'a> {
                 device.instance.clone(),
             )
         };
-        Self { info }
+        Self { info, entry: device.entry.clone() }
     }
 
     pub fn build(self) -> Result<Swapchain<'a>, SwapchainError> {
@@ -235,6 +236,7 @@ impl<'a> SwapchainBuilder<'a> {
         }
 
         let surface_support = utils::query_surface_support_details(
+            &self.entry,
             self.info.instance.clone(),
             self.info.physical_device,
             self.info.surface.unwrap(),

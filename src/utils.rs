@@ -203,13 +203,13 @@ pub fn get_separate_queue_index(
 }
 
 pub fn get_present_queue_index(
+    entry: &ash::Entry,
     instance: &ash::Instance,
     phys_device: vk::PhysicalDevice,
     surface: vk::SurfaceKHR,
     families: &[vk::QueueFamilyProperties],
 ) -> Option<u32> {
-    let entry = unsafe { Entry::load().unwrap() };
-    let khr_instance = ash::khr::surface::Instance::new(&entry, instance);
+    let khr_instance = ash::khr::surface::Instance::new(entry, instance);
     families
         .iter()
         .enumerate()
@@ -440,6 +440,7 @@ pub struct SurfaceSupportDetails {
     pub present_modes: Vec<vk::PresentModeKHR>,
 }
 pub fn query_surface_support_details(
+    entry: &ash::Entry,
     instance: ash::Instance,
     physical_device: vk::PhysicalDevice,
     surface: vk::SurfaceKHR,
@@ -448,8 +449,7 @@ pub fn query_surface_support_details(
         return Err(SurfaceSupportError::SurfaceHandleNull);
     }
 
-    let entry = unsafe { Entry::load().unwrap() };
-    let khr_instance = ash::khr::surface::Instance::new(&entry, &instance);
+    let khr_instance = ash::khr::surface::Instance::new(entry, &instance);
 
     let capabilities =
         unsafe { khr_instance.get_physical_device_surface_capabilities(physical_device, surface) }
@@ -521,11 +521,11 @@ pub fn find_present_mode(
         .unwrap_or(vk::PresentModeKHR::FIFO)
 }
 
-pub unsafe fn destroy_surface(instance: &Instance, surface: vk::SurfaceKHR) {
+pub unsafe fn destroy_surface(entry: &ash::Entry,instance: &Instance, surface: vk::SurfaceKHR) {
     if !surface.is_null() {
         unsafe {
             let khr_instance =
-                ash::khr::surface::Instance::new(&Entry::load().unwrap(), &instance.instance);
+                ash::khr::surface::Instance::new(entry, &instance.instance);
             khr_instance.destroy_surface(surface, instance.allocation_callbacks.as_ref());
         }
     }

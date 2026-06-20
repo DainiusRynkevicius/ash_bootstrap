@@ -2,9 +2,9 @@ use crate::errors::InstanceError;
 use crate::system_info::{SystemInfo, VALIDATION_LAYER_NAME};
 use ash::ext::debug_utils;
 use ash::prelude::VkResult;
-use ash::{vk, Entry};
-use std::ffi::{c_void, CString};
+use ash::vk;
 use ash::vk::Handle;
+use std::ffi::{CString, c_void};
 
 pub unsafe extern "system" fn vulkan_debug_callback(
     message_severity: vk::DebugUtilsMessageSeverityFlagsEXT,
@@ -53,26 +53,26 @@ pub unsafe extern "system" fn vulkan_debug_callback(
 
 pub struct InstanceBuilder<'a> {
     info: InstanceInfo<'a>,
+    entry: ash::Entry,
 }
 
 impl<'a> InstanceBuilder<'a> {
-    pub fn new() -> Self {
+    pub fn new(entry: ash::Entry) -> Self {
         Self {
             info: Default::default(),
+            entry,
         }
     }
 
     pub fn build(self) -> Result<Instance<'a>, InstanceError> {
-        let sys_info = SystemInfo::new()?;
-
-        let entry = unsafe { ash::Entry::load().unwrap() };
+        let sys_info = SystemInfo::new(&self.entry)?;
 
         let mut instance_version = vk::API_VERSION_1_0;
 
         if self.info.minimum_instance_version > vk::API_VERSION_1_0
             || self.info.required_api_version > vk::API_VERSION_1_0
         {
-            if let Some(ver) = unsafe { entry.try_enumerate_instance_version().unwrap() } {
+            if let Some(ver) = unsafe { self.entry.try_enumerate_instance_version().unwrap() } {
                 instance_version = ver;
             } else {
                 return Err(InstanceError::VulkanVersionUnavailable);
@@ -295,7 +295,7 @@ impl<'a> InstanceBuilder<'a> {
         }
 
         let vk_instance = unsafe {
-            entry
+            self.entry
                 .create_instance(
                     &instance_create_info,
                     self.info.allocation_callbacks.as_ref(),
@@ -308,7 +308,7 @@ impl<'a> InstanceBuilder<'a> {
                 let dm = create_debug_utils_messenger(
                     &vk_instance,
                     self.info.debug_callback,
-                    &entry,
+                    &self.entry,
                     self.info.debug_message_severity,
                     self.info.debug_message_type,
                     self.info.debug_user_data_pointer,
@@ -327,7 +327,7 @@ impl<'a> InstanceBuilder<'a> {
             instance: vk_instance,
             debug_messenger,
             allocation_callbacks: self.info.allocation_callbacks,
-            entry,
+            entry: self.entry.clone(),
             instance_version,
             api_version,
             headless: self.info.headless_context,
@@ -469,16 +469,10 @@ impl<'a> InstanceBuilder<'a> {
     }
 }
 
-impl Default for InstanceBuilder<'_> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 unsafe fn create_debug_utils_messenger(
     instance: &ash::Instance,
     debug_callback: vk::PFN_vkDebugUtilsMessengerCallbackEXT,
-    entry: &Entry,
+    entry: &ash::Entry,
     severity: vk::DebugUtilsMessageSeverityFlagsEXT,
     message_type: vk::DebugUtilsMessageTypeFlagsEXT,
     user_data_pointer: Option<*mut c_void>,
@@ -581,10 +575,8 @@ impl Instance<'_> {
     pub unsafe fn destroy(&self) {
         if let Some(messenger) = self.debug_messenger {
             if !messenger.is_null() {
-                //TODO: add entry to instance, device, physical device, and swapchain
-                let instance = unsafe {
-                    ash::ext::debug_utils::Instance::new(&Entry::load().unwrap(), &self.instance)
-                };
+                let instance = ash::ext::debug_utils::Instance::new(&self.entry, &self.instance);
+
                 unsafe {
                     instance.destroy_debug_utils_messenger(
                         messenger,

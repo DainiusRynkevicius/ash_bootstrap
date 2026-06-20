@@ -111,6 +111,7 @@ impl<'a> DeviceBuilder<'a> {
             allocation_callbacks: self.device_info.allocation_callbacks,
             instance_version: self.physical_device.instance_version,
             instance: self.physical_device.instance,
+            entry: self.physical_device.entry.clone(),
         })
     }
     pub fn custom_queue_setup(mut self, queue_descriptions: Vec<CustomQueueDescription>) -> Self {
@@ -148,6 +149,7 @@ pub struct Device<'a> {
     pub instance_version: u32,
 
     pub instance: ash::Instance,
+    pub entry: ash::Entry,
 }
 
 pub enum QueueType {
@@ -163,6 +165,7 @@ impl<'a> Device<'a> {
             QueueType::Present => {
                 if let Some(surface) = self.surface {
                     utils::get_present_queue_index(
+                        &self.entry,
                         &self.instance,
                         self.physical_device,
                         surface,

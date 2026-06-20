@@ -10,6 +10,7 @@ use std::ffi::CStr;
 pub struct PhysicalDeviceSelector<'a> {
     criteria: SelectionCriteria<'a>,
     instance: InstanceInfo,
+    entry: ash::Entry,
 }
 
 impl PhysicalDeviceSelector<'_> {
@@ -31,10 +32,11 @@ impl PhysicalDeviceSelector<'_> {
                 headless: instance.headless,
                 properties2_ext_enabled: instance.properties2_ext_enabled,
             },
+            entry: instance.entry.clone(),
         }
     }
 
-    pub fn select(&self) -> Result<PhysicalDevice, PhysicalDeviceError> {
+    pub fn select(&self) -> Result<PhysicalDevice<'_>, PhysicalDeviceError> {
         let selected_devices = self.select_impl();
 
         match selected_devices {
@@ -206,6 +208,7 @@ impl PhysicalDeviceSelector<'_> {
 
         let present_queue = if let Some(surface) = self.instance.surface {
             utils::get_present_queue_index(
+                &self.entry,
                 &self.instance.instance,
                 pd.physical_device.clone(),
                 surface,
@@ -244,8 +247,7 @@ impl PhysicalDeviceSelector<'_> {
         }
 
         if !self.criteria.defer_surface_initialization && self.criteria.require_present {
-            let entry = unsafe { Entry::load().unwrap() };
-            let khr_instance = ash::khr::surface::Instance::new(&entry, &self.instance.instance);
+            let khr_instance = ash::khr::surface::Instance::new(&self.entry, &self.instance.instance);
             let formats = unsafe {
                 khr_instance.get_physical_device_surface_formats(
                     pd.physical_device,
@@ -375,7 +377,7 @@ impl PhysicalDeviceSelector<'_> {
             if instance_is_1_1 {
                 unsafe {self.instance.instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
             }else {
-                let instance = unsafe{ash::khr::get_physical_device_properties2::Instance::new(&Entry::load().unwrap(), &self.instance.instance)};
+                let instance = ash::khr::get_physical_device_properties2::Instance::new(&self.entry, &self.instance.instance);
                 unsafe {instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
             }
         }
@@ -396,6 +398,7 @@ impl PhysicalDeviceSelector<'_> {
             properties2_ext_enabled: self.instance.properties2_ext_enabled,
             suitability: PhysicalDeviceSuitability::Suitable,
             instance: self.instance.instance.clone(),
+            entry: self.entry.clone(),
         }
     }
 
@@ -561,6 +564,7 @@ pub struct PhysicalDevice<'a> {
     suitability: PhysicalDeviceSuitability,
 
     pub instance: ash::Instance,
+    pub entry: ash::Entry,
 }
 
 impl PhysicalDevice<'_> {
