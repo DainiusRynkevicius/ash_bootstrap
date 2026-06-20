@@ -279,7 +279,7 @@ impl PhysicalDeviceSelector<'_> {
             suitable = PhysicalDeviceSuitability::PartiallySuitable;
         }
 
-        let required_features_supported = /*pd.features.supports(&self.criteria.required_features);*/ self.criteria.required_features.supports(&pd.features);
+        let required_features_supported = self.criteria.required_features.supports(&pd.features);
         let required_additional_features_supported =
             pd.feature_chain.contains_all(&self.criteria.feature_chain);
 
