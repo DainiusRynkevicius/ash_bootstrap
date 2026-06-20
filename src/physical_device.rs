@@ -286,15 +286,22 @@ impl PhysicalDeviceSelector<'_> {
             return PhysicalDeviceSuitability::Unsuitable;
         }
 
+        let mut has_required_memory = false;
         for i in 0..pd.memory_properties.memory_heap_count {
             if pd.memory_properties.memory_heaps[i as usize]
                 .flags
                 .contains(vk::MemoryHeapFlags::DEVICE_LOCAL)
-                && pd.memory_properties.memory_heaps[i as usize].size
-                    < self.criteria.required_mem_size
             {
-                return PhysicalDeviceSuitability::Unsuitable;
+                if pd.memory_properties.memory_heaps[i as usize].size
+                    >= self.criteria.required_mem_size {
+                    has_required_memory = true;
+                    break;
+                }
             }
+        }
+
+        if !has_required_memory {
+            return PhysicalDeviceSuitability::Unsuitable;
         }
 
         return suitable;
