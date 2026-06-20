@@ -21,3 +21,8 @@ optional = true
 portability_enumeration = []
 logger = ["log"]
 default = ["portability_enumeration"]
+
+[dev-dependencies]
+winit = "0.30"
+ash-window = "0.13"
+raw-window-handle = "0.6"

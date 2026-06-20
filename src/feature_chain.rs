@@ -184,3 +184,56 @@ impl Default for GenericFeatureNode<'_> {
 
 unsafe impl ExtendsPhysicalDeviceFeatures2 for GenericFeatureNode<'_> {}
 unsafe impl ExtendsSwapchainCreateInfoKHR for GenericFeatureNode<'_> {}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn node_contains_subset() {
+        let f1 = vk::PhysicalDeviceVulkan11Features::default().multiview(true);
+        let n1 = GenericFeatureNode::from_device_feature(f1);
+
+        let f2 = vk::PhysicalDeviceVulkan11Features::default()
+            .multiview(true)
+            .shader_draw_parameters(true);
+        let n2 = GenericFeatureNode::from_device_feature(f2);
+
+        assert!(n1.contains(&n2));
+
+        assert!(!n2.contains(&n1));
+    }
+
+    #[test]
+    fn add_node_merges_same_structure_type() {
+        let mut chain = GenericFeatureChain::new();
+        chain.add_node(GenericFeatureNode::from_device_feature(
+            vk::PhysicalDeviceVulkan11Features::default().multiview(true),
+        ));
+        chain.add_node(GenericFeatureNode::from_device_feature(
+            vk::PhysicalDeviceVulkan11Features::default().shader_draw_parameters(true),
+        ));
+
+        assert_eq!(chain.nodes.len(), 1);
+
+        let mut requested = GenericFeatureChain::new();
+        requested.add_node(GenericFeatureNode::from_device_feature(
+            vk::PhysicalDeviceVulkan11Features::default()
+                .multiview(true)
+                .shader_draw_parameters(true),
+        ));
+
+        assert!(chain.contains_all(&requested));
+    }
+
+    #[test]
+    fn clone_resets_p_next_chain() {
+        let mut chain = GenericFeatureChain::new();
+        chain.add_node(GenericFeatureNode::from_device_feature(
+            vk::PhysicalDeviceVulkan11Features::default().multiview(true),
+        ));
+
+        let cloned = chain.clone();
+        assert!(cloned.nodes.iter().all(|n| n.p_next.is_null()));
+    }
+}
