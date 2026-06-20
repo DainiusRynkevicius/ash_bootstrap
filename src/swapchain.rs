@@ -40,14 +40,18 @@ impl Swapchain<'_> {
     ) -> Result<Vec<vk::ImageView>, SwapchainError> {
         let swapchain_images = self.get_images()?;
 
-        let contains_image_view_usage = if let Some(p_next) = p_next {
+        let contains_image_view_usage = if let Some(mut p_next) = p_next {
             let mut found = false;
             while !p_next.is_null() {
                 unsafe {
-                    if (*(p_next as *const vk::BaseInStructure)).s_type
+                    let base = *(p_next as *const vk::BaseInStructure);
+                    if base.s_type
                         == vk::StructureType::IMAGE_VIEW_CREATE_INFO
                     {
                         found = true;
+                        break;
+                    }else{
+                       p_next = base.p_next as *mut c_void;
                     }
                 }
             }
