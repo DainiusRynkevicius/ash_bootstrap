@@ -3,7 +3,7 @@ use crate::feature_chain::{GenericFeatureChain, GenericFeatureNode};
 use crate::instance::Instance;
 use crate::utils;
 use crate::utils::SupportsFeatures;
-use ash::{vk, Entry};
+use ash::vk;
 use std::cmp::PartialEq;
 use std::ffi::CStr;
 
@@ -247,7 +247,8 @@ impl PhysicalDeviceSelector<'_> {
         }
 
         if !self.criteria.defer_surface_initialization && self.criteria.require_present {
-            let khr_instance = ash::khr::surface::Instance::new(&self.entry, &self.instance.instance);
+            let khr_instance =
+                ash::khr::surface::Instance::new(&self.entry, &self.instance.instance);
             let formats = unsafe {
                 khr_instance.get_physical_device_surface_formats(
                     pd.physical_device,
@@ -295,7 +296,8 @@ impl PhysicalDeviceSelector<'_> {
                 .contains(vk::MemoryHeapFlags::DEVICE_LOCAL)
             {
                 if pd.memory_properties.memory_heaps[i as usize].size
-                    >= self.criteria.required_mem_size {
+                    >= self.criteria.required_mem_size
+                {
                     has_required_memory = true;
                     break;
                 }
@@ -340,7 +342,8 @@ impl PhysicalDeviceSelector<'_> {
         };
 
         let name = unsafe { CStr::from_ptr(properties.device_name.as_ptr()) }
-            .to_string_lossy().to_string();
+            .to_string_lossy()
+            .to_string();
 
         let available_extensions = if let Ok(extensions) = unsafe {
             self.instance
@@ -351,7 +354,8 @@ impl PhysicalDeviceSelector<'_> {
                 .iter()
                 .map(|ext| {
                     unsafe { CStr::from_ptr(ext.extension_name.as_ptr()) }
-                        .to_string_lossy().to_string()
+                        .to_string_lossy()
+                        .to_string()
                 })
                 .collect()
         } else {
@@ -362,17 +366,28 @@ impl PhysicalDeviceSelector<'_> {
 
         let mut fill_chain = src_feature_chain.clone();
 
-        if !fill_chain.nodes.is_empty() && (instance_is_1_1 || self.instance.properties2_ext_enabled) {
+        if !fill_chain.nodes.is_empty()
+            && (instance_is_1_1 || self.instance.properties2_ext_enabled)
+        {
             let mut local_features = vk::PhysicalDeviceFeatures2::default();
 
-            unsafe{
+            unsafe {
                 fill_chain.chain_up_physical_device(&mut local_features);
             }
             if instance_is_1_1 {
-                unsafe {self.instance.instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
-            }else {
-                let instance = ash::khr::get_physical_device_properties2::Instance::new(&self.entry, &self.instance.instance);
-                unsafe {instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
+                unsafe {
+                    self.instance
+                        .instance
+                        .get_physical_device_features2(vk_phys_device, &mut local_features)
+                };
+            } else {
+                let instance = ash::khr::get_physical_device_properties2::Instance::new(
+                    &self.entry,
+                    &self.instance.instance,
+                );
+                unsafe {
+                    instance.get_physical_device_features2(vk_phys_device, &mut local_features)
+                };
             }
         }
 
@@ -423,7 +438,8 @@ impl PhysicalDeviceSelector<'_> {
             let portability_ext_available = if criteria.enable_portability_subset {
                 phys_dev.available_extensions.iter().any(|x| {
                     x == &vk::KHR_PORTABILITY_SUBSET_NAME
-                        .to_string_lossy().to_string()
+                        .to_string_lossy()
+                        .to_string()
                 })
             } else {
                 false
@@ -435,7 +451,8 @@ impl PhysicalDeviceSelector<'_> {
             if portability_ext_available {
                 phys_dev.extensions_to_enable.push(
                     vk::KHR_PORTABILITY_SUBSET_NAME
-                        .to_string_lossy().to_string(),
+                        .to_string_lossy()
+                        .to_string(),
                 )
             }
         }
@@ -463,9 +480,12 @@ impl PhysicalDeviceSelector<'_> {
             .filter(|p| p.suitability != PhysicalDeviceSuitability::Unsuitable)
             .collect();
 
-        physical_devices.sort_by_key(|p| match p.suitability {
-            PhysicalDeviceSuitability::Suitable => 0,
-            _ => 1,
+        physical_devices.sort_by_key(|p| {
+            if p.properties.device_type == self.criteria.preferred_type {
+                0
+            } else {
+                1
+            }
         });
 
         physical_devices.iter_mut().for_each(|p| {
