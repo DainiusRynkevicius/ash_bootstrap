@@ -216,7 +216,7 @@ pub fn get_present_queue_index(
         .position(|(i, _)| unsafe {
             khr_instance
                 .get_physical_device_surface_support(phys_device, i as u32, surface)
-                .is_ok()
+                .unwrap_or(false)
         })
         .map(|t| t as u32)
 }
