@@ -72,7 +72,7 @@ impl<'a> InstanceBuilder<'a> {
         if self.info.minimum_instance_version > vk::API_VERSION_1_0
             || self.info.required_api_version > vk::API_VERSION_1_0
         {
-            if let Some(ver) = unsafe { self.entry.try_enumerate_instance_version().unwrap() } {
+            if let Some(ver) = unsafe { self.entry.try_enumerate_instance_version()? } {
                 instance_version = ver;
             } else {
                 return Err(InstanceError::VulkanVersionUnavailable);

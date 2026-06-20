@@ -15,8 +15,8 @@ pub struct SystemInfo {
 impl SystemInfo {
     pub fn new(entry: &ash::Entry) -> Result<Self, InstanceError> {
         unsafe {
-            let available_layers = entry.enumerate_instance_layer_properties().unwrap();
-            let available_extensions = entry.enumerate_instance_extension_properties(None).unwrap();
+            let available_layers = entry.enumerate_instance_layer_properties()?;
+            let available_extensions = entry.enumerate_instance_extension_properties(None)?;
 
             let validation_layers_available = available_layers
                 .iter()

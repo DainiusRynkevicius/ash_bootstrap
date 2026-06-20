@@ -340,10 +340,7 @@ impl PhysicalDeviceSelector<'_> {
         };
 
         let name = unsafe { CStr::from_ptr(properties.device_name.as_ptr()) }
-            .to_owned()
-            .to_str()
-            .unwrap()
-            .to_owned();
+            .to_string_lossy().to_string();
 
         let available_extensions = if let Ok(extensions) = unsafe {
             self.instance
@@ -354,10 +351,7 @@ impl PhysicalDeviceSelector<'_> {
                 .iter()
                 .map(|ext| {
                     unsafe { CStr::from_ptr(ext.extension_name.as_ptr()) }
-                        .to_owned()
-                        .to_str()
-                        .unwrap()
-                        .to_owned()
+                        .to_string_lossy().to_string()
                 })
                 .collect()
         } else {
@@ -429,9 +423,7 @@ impl PhysicalDeviceSelector<'_> {
             let portability_ext_available = if criteria.enable_portability_subset {
                 phys_dev.available_extensions.iter().any(|x| {
                     x == &vk::KHR_PORTABILITY_SUBSET_NAME
-                        .to_str()
-                        .unwrap()
-                        .to_string()
+                        .to_string_lossy().to_string()
                 })
             } else {
                 false
@@ -443,9 +435,7 @@ impl PhysicalDeviceSelector<'_> {
             if portability_ext_available {
                 phys_dev.extensions_to_enable.push(
                     vk::KHR_PORTABILITY_SUBSET_NAME
-                        .to_str()
-                        .unwrap()
-                        .to_string(),
+                        .to_string_lossy().to_string(),
                 )
             }
         }

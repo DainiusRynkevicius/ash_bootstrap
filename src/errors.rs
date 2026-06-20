@@ -26,6 +26,8 @@ pub enum InstanceError {
     WindowingExtensionsUnavailable,
     #[error("Provided string contains interior null byte.")]
     InvalidString(#[from] std::ffi::NulError),
+    #[error("Failed to enumerate instance properties.")]
+    FailedToEnumerate(#[from] ash::vk::Result)
 }
 
 #[derive(Error, Debug)]
