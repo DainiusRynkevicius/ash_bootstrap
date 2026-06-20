@@ -238,7 +238,7 @@ impl<'a> InstanceBuilder<'a> {
         };
 
         let mut validation_features = if !self.info.enabled_validation_features.is_empty()
-            || self.info.disabled_validation_features.is_empty()
+            || !self.info.disabled_validation_features.is_empty()
         {
             vk::ValidationFeaturesEXT::default()
                 .enabled_validation_features(&self.info.enabled_validation_features)
@@ -279,7 +279,7 @@ impl<'a> InstanceBuilder<'a> {
             instance_create_info = instance_create_info.push_next(&mut messenger_create_info);
         }
         if !self.info.enabled_validation_features.is_empty()
-            || self.info.disabled_validation_features.is_empty()
+            || !self.info.disabled_validation_features.is_empty()
         {
             instance_create_info = instance_create_info.push_next(&mut validation_features);
         }
