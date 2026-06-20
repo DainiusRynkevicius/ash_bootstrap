@@ -102,8 +102,8 @@ impl<'a> InstanceBuilder<'a> {
             self.info.required_api_version
         };
 
-        let app_name = CString::new(self.info.app_name).unwrap();
-        let engine_name = CString::new(self.info.engine_name).unwrap();
+        let app_name = CString::new(self.info.app_name)?;
+        let engine_name = CString::new(self.info.engine_name)?;
         let app_info = vk::ApplicationInfo::default()
             .application_name(&app_name)
             .application_version(self.info.app_version)
@@ -115,7 +115,7 @@ impl<'a> InstanceBuilder<'a> {
         let mut layers: Vec<CString> = vec![];
 
         for extension in self.info.enabled_extensions {
-            extensions.push(CString::new(extension).unwrap())
+            extensions.push(CString::new(extension)?)
         }
 
         if self.info.debug_callback.is_some()
@@ -209,7 +209,7 @@ impl<'a> InstanceBuilder<'a> {
         }
 
         for layer in self.info.enabled_layers {
-            layers.push(CString::new(layer).unwrap());
+            layers.push(CString::new(layer)?);
         }
 
         if self.info.enable_validation_layers

@@ -24,6 +24,8 @@ pub enum InstanceError {
     RequestedExtensionsUnavailable,
     #[error("Requested Vulkan windowing extensions are unavailable on this system.")]
     WindowingExtensionsUnavailable,
+    #[error("Provided string contains interior null byte.")]
+    InvalidString(#[from] std::ffi::NulError),
 }
 
 #[derive(Error, Debug)]
@@ -44,7 +46,7 @@ pub enum DeviceError{
     FailedToCreateDevice,
     //TODO: name should be better, original one sucks
     #[error("Usage of Add Required Extension Features while having DeviceFeatures2 in PNext chain")]
-    VkPhysicalDeviceFeatures2InPNextChainWhileUsingAddRequiredExtensionFeatures
+    VkPhysicalDeviceFeatures2InPNextChainWhileUsingAddRequiredExtensionFeatures,
 }
 
 #[derive(Error, Debug)]

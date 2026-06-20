@@ -43,7 +43,17 @@ impl<'a> DeviceBuilder<'a> {
             .extensions_to_enable
             .iter()
             .map(|name| {
-                CString::new(name.clone()).unwrap()
+                CString::new(name.clone()).unwrap_or({
+                    #[cfg(feature = "log")]
+                    {
+                        log::warn!("Malformed extension name: {}", name);
+                    }
+                    #[cfg(not(feature = "log"))]
+                    {
+                        println!("Malformed extension name: {}", name);
+                    }
+                 Default::default()   
+                })
             })
             .collect::<Vec<_>>();
 

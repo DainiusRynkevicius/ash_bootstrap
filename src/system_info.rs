@@ -43,17 +43,17 @@ impl SystemInfo {
 
     pub fn is_layer_available(&self, layer_name: impl Into<String>) -> bool {
         let layer_name = layer_name.into();
-        self.available_layers.iter().any(|layer| unsafe {
-            CStr::from_ptr(layer.layer_name.as_ptr())
-                == CString::new(layer_name.clone()).unwrap().as_ref()
+        self.available_layers.iter().any(|layer| {
+            unsafe { CStr::from_ptr(layer.layer_name.as_ptr()) }.to_bytes()
+                == layer_name.as_bytes()
         })
     }
 
     pub fn is_extension_available(&self, extension_name: impl Into<String>) -> bool {
         let extension_name = extension_name.into();
-        self.available_extensions.iter().any(|ext| unsafe {
-            CStr::from_ptr(ext.extension_name.as_ptr())
-                == CString::new(extension_name.clone()).unwrap().as_ref()
+        self.available_extensions.iter().any(|ext| {
+            unsafe { CStr::from_ptr(ext.extension_name.as_ptr()) }.to_bytes()
+                == extension_name.as_bytes()
         })
     }
 
