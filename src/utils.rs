@@ -471,12 +471,11 @@ pub fn find_desired_surface_format(
     available: &[vk::SurfaceFormatKHR],
     desired: &[vk::SurfaceFormatKHR],
 ) -> Result<vk::SurfaceFormatKHR, SurfaceSupportError> {
-    available
-        .iter()
-        .zip(desired.iter())
-        .find(|(a, d)| a.format == d.format && a.color_space == d.color_space)
-        .map(|(a, _)| *a)
-        .ok_or(SurfaceSupportError::NoSuitableDesiredFormat)
+   desired
+       .iter()
+       .find(|d| available.iter().any(|a| a.format == d.format && a.color_space == d.color_space))
+       .copied()
+       .ok_or(SurfaceSupportError::NoSuitableDesiredFormat)
 }
 pub fn find_best_surface_format(
     available: &[vk::SurfaceFormatKHR],
