@@ -46,14 +46,18 @@ impl<'a> GenericFeatureChain<'a> {
         })
     }
     //TODO: Switch this with a trait that has push next or do it manually without helper method
-    pub unsafe fn chain_up_physical_device<'b>(&'b mut self, feats2: &mut vk::PhysicalDeviceFeatures2<'a>)
-    where 'b: 'a{
+    pub unsafe fn chain_up_physical_device<'b>(
+        &'b mut self,
+        feats2: &mut vk::PhysicalDeviceFeatures2<'b>,
+    ) {
         for node in &mut self.nodes {
             *feats2 = feats2.push_next(node);
         }
     }
-    pub unsafe fn chain_up_swapchain<'b>(&'b mut self, feats2: &mut vk::SwapchainCreateInfoKHR<'a>)
-    where 'b: 'a{
+    pub unsafe fn chain_up_swapchain<'b>(
+        &'b mut self,
+        feats2: &mut vk::SwapchainCreateInfoKHR<'b>,
+    ) {
         for node in &mut self.nodes {
             *feats2 = feats2.push_next(node);
         }

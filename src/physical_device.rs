@@ -355,37 +355,23 @@ impl PhysicalDeviceSelector<'_> {
             vec![]
         };
 
-        //let instance_is_1_1 = self.instance.version >= vk::API_VERSION_1_1;
+        let instance_is_1_1 = self.instance.version >= vk::API_VERSION_1_1;
 
-        let fill_chain = src_feature_chain.clone();
-        /*TODO: I dont get why this is here, original cpp code:
-                bool instance_is_1_1 = instance_info.version >= VKB_VK_API_VERSION_1_1;
-                    if (!fill_chain.nodes.empty() && (instance_is_1_1 || instance_info.properties2_ext_enabled)) {
-                        VkPhysicalDeviceFeatures2 local_features{};
-                        fill_chain.chain_up(local_features);
-                        // Use KHR function if not able to use the core function
-                        if (instance_is_1_1) {
-                            detail::vulkan_functions().fp_vkGetPhysicalDeviceFeatures2(vk_phys_device, &local_features);
-                        } else {
-                            detail::vulkan_functions().fp_vkGetPhysicalDeviceFeatures2KHR(vk_phys_device, &local_features);
-                        }
-                physical_device.extended_features_chain = fill_chain;
+        let mut fill_chain = src_feature_chain.clone();
+
+        if !fill_chain.nodes.is_empty() && (instance_is_1_1 || self.instance.properties2_ext_enabled) {
+            let mut local_features = vk::PhysicalDeviceFeatures2::default();
+
+            unsafe{
+                fill_chain.chain_up_physical_device(&mut local_features);
+            }
+            if instance_is_1_1 {
+                unsafe {self.instance.instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
+            }else {
+                let instance = unsafe{ash::khr::get_physical_device_properties2::Instance::new(&Entry::load().unwrap(), &self.instance.instance)};
+                unsafe {instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
+            }
         }
-            */
-
-        // if !fill_chain.nodes.is_empty() && (instance_is_1_1 || self.instance.properties2_ext_enabled) {
-        //     let mut local_features = vk::PhysicalDeviceFeatures2::default();
-        //
-        //     {
-        //         fill_chain.chain_up(&mut local_features);
-        //     }
-        //     if instance_is_1_1 {
-        //         unsafe {self.instance.instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
-        //     }else {
-        //         let instance = unsafe{ash::khr::get_physical_device_properties2::Instance::new(&Entry::load().unwrap(), &self.instance.instance)};
-        //         unsafe {instance.get_physical_device_features2(vk_phys_device, &mut local_features)};
-        //     }
-        // }
 
         PhysicalDevice {
             name,
