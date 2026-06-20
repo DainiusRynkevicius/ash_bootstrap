@@ -469,7 +469,7 @@ impl<'a> SwapchainBuilder<'a> {
         );
         formats.push(
             vk::SurfaceFormatKHR::default()
-                .format(vk::Format::B8G8R8A8_SRGB)
+                .format(vk::Format::R8G8B8A8_SRGB)
                 .color_space(vk::ColorSpaceKHR::SRGB_NONLINEAR),
         );
     }
