@@ -76,7 +76,8 @@ fn bootstrap(window: &Window) -> Result<(), Box<dyn std::error::Error>> {
     };
 
     // The selector is bound to a local because the selected `PhysicalDevice` borrows from it.
-    let physical_device = PhysicalDeviceSelector::new_with_surface(&instance, Some(surface))
+    let physical_device = PhysicalDeviceSelector::new(&instance)
+        .set_surface(surface)
         .require_present(true)
         .select()?;
     println!("Selected GPU: {}", physical_device.name);

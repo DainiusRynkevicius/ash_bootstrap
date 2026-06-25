@@ -15,10 +15,6 @@ pub struct PhysicalDeviceSelector {
 
 impl PhysicalDeviceSelector {
     pub fn new(instance: &Instance) -> Self {
-        Self::new_with_surface(instance, None)
-    }
-
-    pub fn new_with_surface(instance: &Instance, surface: Option<vk::SurfaceKHR>) -> Self {
         Self {
             criteria: SelectionCriteria {
                 require_present: !instance.headless,
@@ -27,7 +23,7 @@ impl PhysicalDeviceSelector {
             },
             instance: InstanceInfo {
                 instance: instance.instance.clone(),
-                surface,
+                surface: None,
                 version: instance.instance_version,
                 headless: instance.headless,
                 properties2_ext_enabled: instance.properties2_ext_enabled,
