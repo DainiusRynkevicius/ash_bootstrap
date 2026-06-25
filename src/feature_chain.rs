@@ -2,21 +2,20 @@ use crate::utils::AsBool;
 use ash::vk;
 use ash::vk::{ExtendsPhysicalDeviceFeatures2, ExtendsSwapchainCreateInfoKHR, StructureType};
 use std::ffi::c_void;
-use std::marker::PhantomData;
 use std::ptr::null_mut;
 use std::{mem, ptr};
 
 #[derive(Default)]
-pub struct GenericFeatureChain<'a> {
-    pub(crate) nodes: Vec<GenericFeatureNode<'a>>,
+pub struct GenericFeatureChain {
+    pub(crate) nodes: Vec<GenericFeatureNode>,
 }
 
-impl<'a> GenericFeatureChain<'a> {
+impl GenericFeatureChain {
     pub fn new() -> Self {
         Default::default()
     }
 
-    pub fn add_node(&mut self, node: GenericFeatureNode<'a>) {
+    pub fn add_node(&mut self, node: GenericFeatureNode) {
         if let Some(duplicate) = self
             .nodes
             .iter_mut()
@@ -79,7 +78,7 @@ impl<'a> GenericFeatureChain<'a> {
     }
 }
 
-impl Clone for GenericFeatureChain<'_> {
+impl Clone for GenericFeatureChain {
     // Resets p next chain and clones
     fn clone(&self) -> Self {
         let chain = Self {
@@ -100,22 +99,21 @@ impl Clone for GenericFeatureChain<'_> {
 pub const NODE_FIELD_CAPACITY: usize = 256;
 
 #[repr(C)]
-pub struct GenericFeatureNode<'a> {
+pub struct GenericFeatureNode {
     pub(crate) structure_type: StructureType,
     p_next: *mut c_void,
     fields: [vk::Bool32; NODE_FIELD_CAPACITY],
-    _marker: PhantomData<&'a ()>,
 }
 
-impl<'a> GenericFeatureNode<'a> {
-    pub fn from_device_feature<T>(feature: T) -> GenericFeatureNode<'a>
+impl GenericFeatureNode {
+    pub fn from_device_feature<T>(feature: T) -> GenericFeatureNode
     where
         T: ExtendsPhysicalDeviceFeatures2,
     {
         unsafe { Self::from_raw(feature) }
     }
 
-    pub fn from_swapchain_feature<T>(feature: T) -> GenericFeatureNode<'a>
+    pub fn from_swapchain_feature<T>(feature: T) -> GenericFeatureNode
     where
         T: ExtendsSwapchainCreateInfoKHR,
     {
@@ -123,7 +121,7 @@ impl<'a> GenericFeatureNode<'a> {
     }
 
     /// # Safety: feature must be a chainable vulkan feature struct
-    pub unsafe fn from_raw<T>(feature: T) -> GenericFeatureNode<'a> {
+    pub unsafe fn from_raw<T>(feature: T) -> GenericFeatureNode {
         assert!(
             mem::size_of::<T>() <= mem::size_of::<Self>(),
             "Not enough space to copy fields."
@@ -135,6 +133,7 @@ impl<'a> GenericFeatureNode<'a> {
             let copy_size = std::cmp::min(size_of::<T>(), size_of::<GenericFeatureNode>());
             ptr::copy_nonoverlapping(src_ptr, node_ptr, copy_size);
         }
+        node.p_next = null_mut();
         node
     }
 
@@ -166,24 +165,22 @@ impl<'a> GenericFeatureNode<'a> {
             structure_type: self.structure_type.clone(),
             p_next: self.p_next.clone(),
             fields: self.fields.clone(),
-            _marker: self._marker.clone(),
         }
     }
 }
 
-impl Default for GenericFeatureNode<'_> {
+impl Default for GenericFeatureNode {
     fn default() -> Self {
         Self {
             structure_type: vk::StructureType::from_raw(0),
             p_next: null_mut(),
             fields: [vk::FALSE; NODE_FIELD_CAPACITY],
-            _marker: Default::default(),
         }
     }
 }
 
-unsafe impl ExtendsPhysicalDeviceFeatures2 for GenericFeatureNode<'_> {}
-unsafe impl ExtendsSwapchainCreateInfoKHR for GenericFeatureNode<'_> {}
+unsafe impl ExtendsPhysicalDeviceFeatures2 for GenericFeatureNode {}
+unsafe impl ExtendsSwapchainCreateInfoKHR for GenericFeatureNode {}
 
 #[cfg(test)]
 mod tests {

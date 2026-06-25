@@ -7,13 +7,13 @@ use ash::vk;
 use std::cmp::PartialEq;
 use std::ffi::CStr;
 
-pub struct PhysicalDeviceSelector<'a> {
-    criteria: SelectionCriteria<'a>,
+pub struct PhysicalDeviceSelector {
+    criteria: SelectionCriteria,
     instance: InstanceInfo,
     entry: ash::Entry,
 }
 
-impl PhysicalDeviceSelector<'_> {
+impl PhysicalDeviceSelector {
     pub fn new(instance: &Instance) -> Self {
         Self::new_with_surface(instance, None)
     }
@@ -36,7 +36,7 @@ impl PhysicalDeviceSelector<'_> {
         }
     }
 
-    pub fn select(&self) -> Result<PhysicalDevice<'_>, PhysicalDeviceError> {
+    pub fn select(&self) -> Result<PhysicalDevice, PhysicalDeviceError> {
         let selected_devices = self.select_impl();
 
         match selected_devices {
@@ -312,14 +312,11 @@ impl PhysicalDeviceSelector<'_> {
     }
 
     /// SAFETY: Valid `device` enumerated from current device selector
-    unsafe fn populate_device_details<'a, 'b>(
+    unsafe fn populate_device_details(
         &self,
         vk_phys_device: vk::PhysicalDevice,
-        src_feature_chain: GenericFeatureChain<'a>,
-    ) -> PhysicalDevice<'b>
-    where
-        'a: 'b,
-    {
+        src_feature_chain: GenericFeatureChain,
+    ) -> PhysicalDevice {
         let queue_families = unsafe {
             self.instance
                 .instance
@@ -429,9 +426,9 @@ impl PhysicalDeviceSelector<'_> {
                 return Err(PhysicalDeviceError::FailedEnumeratePhysicalDevices);
             };
 
-        fn fill_out_phys_dev_with_criteria<'a>(
-            phys_dev: &mut PhysicalDevice<'a>,
-            criteria: &SelectionCriteria<'a>,
+        fn fill_out_phys_dev_with_criteria(
+            phys_dev: &mut PhysicalDevice,
+            criteria: &SelectionCriteria,
         ) {
             phys_dev.features = criteria.required_features;
             phys_dev.feature_chain = criteria.feature_chain.clone();
@@ -495,7 +492,7 @@ impl PhysicalDeviceSelector<'_> {
     }
 }
 
-struct SelectionCriteria<'a> {
+struct SelectionCriteria {
     name: String,
     preferred_type: vk::PhysicalDeviceType,
     allow_any_type: bool,
@@ -511,14 +508,14 @@ struct SelectionCriteria<'a> {
 
     required_features: vk::PhysicalDeviceFeatures,
 
-    feature_chain: GenericFeatureChain<'a>,
+    feature_chain: GenericFeatureChain,
 
     defer_surface_initialization: bool,
     use_first_gpu_unconditionally: bool,
     enable_portability_subset: bool,
 }
 
-impl Default for SelectionCriteria<'_> {
+impl Default for SelectionCriteria {
     fn default() -> Self {
         Self {
             name: "".to_string(),
@@ -555,7 +552,7 @@ pub enum PhysicalDeviceSuitability {
     Unsuitable,
 }
 
-pub struct PhysicalDevice<'a> {
+pub struct PhysicalDevice {
     pub name: String,
     pub physical_device: vk::PhysicalDevice,
     pub surface: Option<vk::SurfaceKHR>,
@@ -567,7 +564,7 @@ pub struct PhysicalDevice<'a> {
     pub(crate) extensions_to_enable: Vec<String>,
     pub(crate) available_extensions: Vec<String>,
     pub(crate) queue_families: Vec<vk::QueueFamilyProperties>,
-    pub(crate) feature_chain: GenericFeatureChain<'a>,
+    pub(crate) feature_chain: GenericFeatureChain,
 
     pub(crate) defer_surface_initialization: bool,
     pub(crate) properties2_ext_enabled: bool,
@@ -577,7 +574,7 @@ pub struct PhysicalDevice<'a> {
     pub entry: ash::Entry,
 }
 
-impl PhysicalDevice<'_> {
+impl PhysicalDevice {
     pub fn has_dedicated_compute_queue(&self) -> bool {
         utils::get_dedicated_queue_index(
             &self.queue_families,

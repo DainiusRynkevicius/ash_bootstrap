@@ -3,9 +3,9 @@ use crate::errors::SwapchainError;
 use crate::feature_chain::{GenericFeatureChain, GenericFeatureNode};
 use crate::utils;
 use ash::vk;
+use ash::vk::Handle;
 use std::ffi::c_void;
 use std::ptr::null_mut;
-use ash::vk::Handle;
 
 pub struct Swapchain<'a> {
     device: ash::Device,
@@ -45,13 +45,11 @@ impl Swapchain<'_> {
             while !p_next.is_null() {
                 unsafe {
                     let base = *(p_next as *const vk::BaseInStructure);
-                    if base.s_type
-                        == vk::StructureType::IMAGE_VIEW_CREATE_INFO
-                    {
+                    if base.s_type == vk::StructureType::IMAGE_VIEW_CREATE_INFO {
                         found = true;
                         break;
-                    }else{
-                       p_next = base.p_next as *mut c_void;
+                    } else {
+                        p_next = base.p_next as *mut c_void;
                     }
                 }
             }
@@ -132,19 +130,31 @@ impl Swapchain<'_> {
         }
     }
 
-    pub fn image_format(&self) -> vk::Format {self.image_format}
-    pub fn color_space(&self) -> vk::ColorSpaceKHR {self.color_space}
-    pub fn extent(&self) -> vk::Extent2D {self.extent}
-    pub fn present_mode(&self) -> vk::PresentModeKHR {self.present_mode}
-    pub fn image_count(&self) -> u32 {self.image_count}
-    pub fn image_usage_flags(&self) -> vk::ImageUsageFlags {self.image_usage_flags}
+    pub fn image_format(&self) -> vk::Format {
+        self.image_format
+    }
+    pub fn color_space(&self) -> vk::ColorSpaceKHR {
+        self.color_space
+    }
+    pub fn extent(&self) -> vk::Extent2D {
+        self.extent
+    }
+    pub fn present_mode(&self) -> vk::PresentModeKHR {
+        self.present_mode
+    }
+    pub fn image_count(&self) -> u32 {
+        self.image_count
+    }
+    pub fn image_usage_flags(&self) -> vk::ImageUsageFlags {
+        self.image_usage_flags
+    }
 }
 
 struct SwapchainInfo<'a> {
     physical_device: vk::PhysicalDevice,
     device: ash::Device,
     instance: ash::Instance,
-    p_next_chain: GenericFeatureChain<'a>,
+    p_next_chain: GenericFeatureChain,
     create_flags: vk::SwapchainCreateFlagsKHR,
     surface: Option<vk::SurfaceKHR>,
     desired_formats: Vec<vk::SurfaceFormatKHR>,
@@ -225,7 +235,10 @@ impl<'a> SwapchainBuilder<'a> {
                 device.instance.clone(),
             )
         };
-        Self { info, entry: device.entry.clone() }
+        Self {
+            info,
+            entry: device.entry.clone(),
+        }
     }
 
     pub fn build(self) -> Result<Swapchain<'a>, SwapchainError> {

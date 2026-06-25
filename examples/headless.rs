@@ -23,8 +23,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // No surface in a headless context. The selector is bound to a local because the
     // selected `PhysicalDevice` borrows from it.
-    let selector = PhysicalDeviceSelector::new(&instance).require_present(false);
-    let physical_device = selector.select()?;
+    let physical_device = PhysicalDeviceSelector::new(&instance)
+        .require_present(false)
+        .select()?;
 
     println!("Selected GPU: {}", physical_device.name);
 

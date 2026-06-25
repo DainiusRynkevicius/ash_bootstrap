@@ -7,12 +7,12 @@ use ash::vk::{AllocationCallbacks, QueueFlags};
 use std::ffi::CString;
 
 pub struct DeviceBuilder<'a> {
-    physical_device: PhysicalDevice<'a>,
+    physical_device: PhysicalDevice,
     device_info: DeviceInfo<'a>,
 }
 
 impl<'a> DeviceBuilder<'a> {
-    pub fn new(physical_device: PhysicalDevice<'a>) -> Self {
+    pub fn new(physical_device: PhysicalDevice) -> Self {
         Self {
             physical_device,
             device_info: Default::default(),
@@ -144,7 +144,7 @@ pub struct CustomQueueDescription {
 #[derive(Default)]
 struct DeviceInfo<'a> {
     flags: vk::DeviceCreateFlags,
-    p_next_chain: Vec<GenericFeatureNode<'a>>,
+    p_next_chain: Vec<GenericFeatureNode>,
     queue_descriptions: Vec<CustomQueueDescription>,
     allocation_callbacks: Option<AllocationCallbacks<'a>>,
 }
