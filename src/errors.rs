@@ -27,7 +27,7 @@ pub enum InstanceError {
     #[error("Provided string contains interior null byte.")]
     InvalidString(#[from] std::ffi::NulError),
     #[error("Failed to enumerate instance properties.")]
-    FailedToEnumerate(#[from] ash::vk::Result)
+    FailedToEnumerate(#[from] ash::vk::Result),
 }
 
 #[derive(Error, Debug)]
@@ -43,7 +43,7 @@ pub enum PhysicalDeviceError {
 }
 
 #[derive(Error, Debug)]
-pub enum DeviceError{
+pub enum DeviceError {
     #[error("Failed to create device")]
     FailedToCreateDevice,
     //TODO: name should be better, original one sucks
@@ -52,7 +52,7 @@ pub enum DeviceError{
 }
 
 #[derive(Error, Debug)]
-pub enum QueueError{
+pub enum QueueError {
     #[error("Present queue unavailable")]
     PresentUnavailable,
     #[error("Graphics queue unavailable")]
@@ -64,11 +64,11 @@ pub enum QueueError{
     #[error("Queue index out of bounds")]
     QueueIndexOutOfBounds,
     #[error("Invalid queue family index")]
-    InvalidQueueFamilyIndex
+    InvalidQueueFamilyIndex,
 }
 
 #[derive(Error, Debug)]
-pub enum SwapchainError{
+pub enum SwapchainError {
     #[error("Surface handle was not provided")]
     SurfaceHandleNotProvided,
     #[error("Failed to query surface support details")]
@@ -82,11 +82,15 @@ pub enum SwapchainError{
     #[error("Required minimum image count is too low")]
     RequiredMinImageCountTooLow,
     #[error("Required usage is not supported")]
-    RequiredUsageNotSupported
+    RequiredUsageNotSupported,
+    #[error("No graphics queue family found")]
+    NoGraphicsQueueFound,
+    #[error("No present queue family found")]
+    NoPresentQueueFound,
 }
 
 #[derive(Error, Debug)]
-pub enum SurfaceSupportError{
+pub enum SurfaceSupportError {
     #[error("Provided surface handle is null")]
     SurfaceHandleNull,
     #[error("Failed to get surface capabilities")]
@@ -96,5 +100,5 @@ pub enum SurfaceSupportError{
     #[error("Failed to enumerate surface present modes")]
     FailedToEnumeratePresentModes,
     #[error("No suitable surface format found")]
-    NoSuitableDesiredFormat
+    NoSuitableDesiredFormat,
 }

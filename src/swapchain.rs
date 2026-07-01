@@ -2,8 +2,8 @@ use crate::device::{Device, QueueType};
 use crate::errors::SwapchainError;
 use crate::feature_chain::{GenericFeatureChain, GenericFeatureNode};
 use crate::utils;
-use ash::vk;
-use ash::vk::Handle;
+use ash::vk::{Handle, PhysicalDevice, QueueFlags, SurfaceKHR};
+use ash::{Entry, vk};
 use std::ffi::c_void;
 use std::ptr::null_mut;
 
@@ -239,6 +239,53 @@ impl<'a> SwapchainBuilder<'a> {
             info,
             entry: device.entry.clone(),
         }
+    }
+
+    pub fn new_ash(
+        entry: &Entry,
+        instance: &ash::Instance,
+        physical_device: PhysicalDevice,
+        device: &ash::Device,
+        surface: SurfaceKHR,
+        mut graphics_queue_index: Option<u32>,
+        mut present_queue_index: Option<u32>,
+    ) -> Result<Self, SwapchainError> {
+        if graphics_queue_index.is_none() || present_queue_index.is_none() {
+            let queue_families =
+                unsafe { instance.get_physical_device_queue_family_properties(physical_device) };
+            graphics_queue_index = graphics_queue_index
+                .or_else(|| utils::get_first_queue_index(&queue_families, QueueFlags::GRAPHICS));
+            present_queue_index = present_queue_index.or_else(|| {
+                utils::get_present_queue_index(
+                    entry,
+                    instance,
+                    physical_device,
+                    surface,
+                    &queue_families,
+                )
+            });
+        }
+
+        let graphics_queue_index =
+            graphics_queue_index.ok_or(SwapchainError::NoGraphicsQueueFound)?;
+        let present_queue_index = present_queue_index.ok_or(SwapchainError::NoPresentQueueFound)?;
+
+        let instance_version = unsafe { entry.try_enumerate_instance_version() }
+            .ok()
+            .flatten()
+            .unwrap_or(vk::API_VERSION_1_0);
+
+        let info = SwapchainInfo {
+            surface: Some(surface),
+            graphics_queue_index,
+            present_queue_index,
+            instance_version,
+            ..SwapchainInfo::new(device.clone(), physical_device, instance.clone())
+        };
+        Ok(Self {
+            info,
+            entry: entry.clone(),
+        })
     }
 
     pub fn build(self) -> Result<Swapchain<'a>, SwapchainError> {
